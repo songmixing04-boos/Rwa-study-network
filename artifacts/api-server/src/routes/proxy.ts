@@ -88,6 +88,13 @@ function rewriteHtml(html: string): string {
     (_, q, path) => `url(${q}/proxy${path})`
   );
 
+  // ── Logo replacement ───────────────────────────────────────────────────────
+  // Swap the site's original logo with our RWA Study Network logo everywhere
+  html = html.replace(
+    /https:\/\/i\.ibb\.co\/yF4mhNPB\/f493d534-fbf8-4b31-b741-83b343f8a9e1\.jpg/g,
+    "/assets/rwa-logo.jpg"
+  );
+
   // ── Branding rewrites ──────────────────────────────────────────────────────
   // Replace page <title>
   html = html.replace(/<title>[^<]*<\/title>/i, "<title>RWA Study Network</title>");
