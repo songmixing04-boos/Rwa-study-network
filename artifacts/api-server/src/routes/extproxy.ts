@@ -8,6 +8,14 @@ const SITE_ORIGIN = "https://rwa.studybeepro.in";
 function rewriteConfigJson(data: Record<string, unknown>): Record<string, unknown> {
   const result = { ...data };
 
+  // Rebrand: "RWA" display name → "RWA Study Network"
+  if (result["stylishName(brand)"] === "RWA" || result["stylishName(brand)"] === "rwa") {
+    result["stylishName(brand)"] = "RWA Study Network";
+  }
+  if (typeof result.name === "string") {
+    result.name = result.name.replace(/\bRWA\b/g, "RWA Study Network");
+  }
+
   // Rewrite player_url so navigation stays inside /proxy
   if (typeof result.player_url === "string") {
     let url = result.player_url;

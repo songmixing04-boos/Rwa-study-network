@@ -88,6 +88,19 @@ function rewriteHtml(html: string): string {
     (_, q, path) => `url(${q}/proxy${path})`
   );
 
+  // ── Branding rewrites ──────────────────────────────────────────────────────
+  // Replace page <title>
+  html = html.replace(/<title>[^<]*<\/title>/i, "<title>RWA Study Network</title>");
+
+  // "studybeepro" as visible text (not inside URLs/hrefs — those were already
+  // rewritten above, so by this point any remaining occurrences are display text)
+  html = html.replace(/StudyBee\s*Pro/gi, "RWA Study Network");
+  html = html.replace(/StudyBee/gi, "RWA Study Network");
+  html = html.replace(/studybeepro/gi, "rwa study network");
+
+  // Comment strings referencing StudyBee (CSS/JS comments)
+  html = html.replace(/StudyBee Dark/gi, "RWA Study Network Dark");
+
   return html;
 }
 
