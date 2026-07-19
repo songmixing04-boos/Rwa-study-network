@@ -39,7 +39,7 @@ export default function App() {
           display: 'block',
         }}
         allow="fullscreen; autoplay; encrypted-media"
-        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-modals allow-top-navigation"
+        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads allow-modals allow-top-navigation-by-user-activation"
       />
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }

@@ -4,11 +4,40 @@ import { logger } from "../lib/logger";
 const router = Router();
 const TARGET_BASE = "https://rwa.studybeepro.in";
 
+// JS snippet injected into every proxied HTML page.
+// Intercepts fetch() / XHR calls to external domains and routes them through
+// /api/extproxy so CORS and Origin checks pass on the upstream API servers.
+const FETCH_OVERRIDE = `
+<script data-proxy-inject="1">
+(function(){
+  var _BLOCKED=['rwa.smexfot.workers.dev','kgsfreebatch.free.nf','shanvikashyap9548.workers.dev'];
+  function _isBlocked(u){if(!u)return false;for(var i=0;i<_BLOCKED.length;i++){if(u.indexOf(_BLOCKED[i])!==-1)return true;}return false;}
+  function _proxyUrl(u){return'/api/extproxy?url='+encodeURIComponent(u);}
+  var _origFetch=window.fetch;
+  window.fetch=function(input,opts){
+    var url=typeof input==='string'?input:(input&&input.url?input.url:'');
+    if(_isBlocked(url)){
+      var pu=_proxyUrl(url);
+      return _origFetch(pu,opts);
+    }
+    return _origFetch.apply(this,arguments);
+  };
+  var _XHR=window.XMLHttpRequest,_open=_XHR.prototype.open;
+  _XHR.prototype.open=function(m,u){
+    if(_isBlocked(u))u=_proxyUrl(u);
+    return _open.apply(this,[m,u].concat(Array.prototype.slice.call(arguments,2)));
+  };
+})();
+</script>`;
+
 // Rewrite all URLs in HTML pointing to the target to go through /proxy
 function rewriteHtml(html: string): string {
   // Remove headers that block embedding
   html = html.replace(/<meta[^>]*x-frame-options[^>]*>/gi, "");
   html = html.replace(/<meta[^>]*content-security-policy[^>]*>/gi, "");
+
+  // Inject the fetch override as early as possible (right after <head>)
+  html = html.replace(/(<head[^>]*>)/i, "$1" + FETCH_OVERRIDE);
 
   // Absolute target URLs in attributes
   html = html.replace(
@@ -34,6 +63,13 @@ function rewriteHtml(html: string): string {
   html = html.replace(
     new RegExp(`(['"\`])https?://rwa\\.studybeepro\\.in(['"\`])`, "g"),
     "$1/proxy/$2"
+  );
+
+  // Rewrite the Cloudflare video worker URL → our server-side proxy
+  // This fixes lecture video loading when the player page is served through /proxy
+  html = html.replace(
+    /(['"`])(https?:)?\/\/api\.shanvikashyap9548\.workers\.dev/gi,
+    "$1/api/video-worker"
   );
 
   // window.location and similar JS patterns with absolute paths
