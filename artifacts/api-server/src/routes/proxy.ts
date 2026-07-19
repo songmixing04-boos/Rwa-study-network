@@ -101,6 +101,41 @@ function rewriteHtml(html: string): string {
   // Comment strings referencing StudyBee (CSS/JS comments)
   html = html.replace(/StudyBee Dark/gi, "RWA Study Network Dark");
 
+  // ── Scrolling ticker injected after </header> ───────────────────────────
+  const TICKER = `
+<div id="rwa-ticker-wrap" style="
+  width:100%;overflow:hidden;background:linear-gradient(90deg,#0a0a0a 0%,#1a1200 50%,#0a0a0a 100%);
+  border-top:1px solid #FACC1540;border-bottom:1px solid #FACC1540;
+  padding:5px 0;position:relative;z-index:999;">
+<style>
+@keyframes rwa-scroll{0%{transform:translateX(100vw)}100%{transform:translateX(-100%)}}
+#rwa-ticker-inner{
+  display:inline-block;white-space:nowrap;
+  animation:rwa-scroll 28s linear infinite;
+  font-family:'Syne','Inter',sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:.06em;
+}
+#rwa-ticker-inner span.t1{color:#FACC15;text-shadow:0 0 8px #FACC1580;}
+#rwa-ticker-inner span.t2{color:#e2c97e;font-size:12px;opacity:.85;}
+#rwa-ticker-inner span.sep{color:#FACC1566;margin:0 18px;}
+</style>
+<div id="rwa-ticker-inner">
+  <span class="t1">🌟 RWA Study Network</span>
+  <span class="sep">✦</span>
+  <span class="t2">Development by 🌺⃞⃪꯭𝓐𝓷𝓴𝓲𝓽 𝓒𝓱𝓪𝓾𝓭𝓱𝓪𝓻𝔂🦅</span>
+  <span class="sep">✦</span>
+  <span class="t1">🌟 RWA Study Network</span>
+  <span class="sep">✦</span>
+  <span class="t2">Development by 🌺⃞⃪꯭𝓐𝓷𝓴𝓲𝓽 𝓒𝓱𝓪𝓾𝓭𝓱𝓪𝓻𝔂🦅</span>
+  <span class="sep">✦</span>
+  <span class="t1">🌟 RWA Study Network</span>
+  <span class="sep">✦</span>
+  <span class="t2">Development by 🌺⃞⃪꯭𝓐𝓷𝓴𝓲𝓽 𝓒𝓱𝓪𝓾𝓭𝓱𝓪𝓻𝔂🦅</span>
+  <span class="sep">✦</span>
+</div>
+</div>`;
+  html = html.replace(/(<\/header>)/i, "$1" + TICKER);
+
   return html;
 }
 
