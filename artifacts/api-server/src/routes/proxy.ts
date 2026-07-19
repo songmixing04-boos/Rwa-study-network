@@ -117,6 +117,13 @@ function rewriteHtml(html: string): string {
   // "studybeepro" as visible text (not inside URLs/hrefs — those were already
   // rewritten above, so by this point any remaining occurrences are display text)
   html = html.replace(/StudyBee\s*Pro/gi, "RWA Study Network");
+
+  // Player page header: STUDY<span>BEE</span> → RWA Study Network
+  html = html.replace(
+    /<div([^>]*)class="brand"[^>]*>STUDY<span[^>]*>BEE<\/span><\/div>/gi,
+    '<div$1class="brand">RWA <span>Study Network</span></div>'
+  );
+
   html = html.replace(/StudyBee/gi, "RWA Study Network");
   html = html.replace(/studybeepro/gi, "rwa study network");
 
