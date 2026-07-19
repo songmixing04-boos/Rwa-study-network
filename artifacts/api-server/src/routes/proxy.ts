@@ -1,8 +1,22 @@
 import { Router, type Request, type Response } from "express";
+import { createReadStream } from "fs";
+import { fileURLToPath } from "url";
+import path from "path";
 import { logger } from "../lib/logger";
 
 const router = Router();
 const TARGET_BASE = "https://rwa.studybeepro.in";
+
+// Serve logo directly under /proxy so it resolves correctly inside the iframe
+const LOGO_PATH = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../public/rwa-logo.jpg"
+);
+router.get("/rwa-logo.jpg", (_req, res) => {
+  res.setHeader("Content-Type", "image/jpeg");
+  res.setHeader("Cache-Control", "public, max-age=86400");
+  createReadStream(LOGO_PATH).pipe(res);
+});
 
 // JS snippet injected into every proxied HTML page.
 // Intercepts fetch() / XHR calls to external domains and routes them through
@@ -90,9 +104,10 @@ function rewriteHtml(html: string): string {
 
   // ── Logo replacement ───────────────────────────────────────────────────────
   // Swap the site's original logo with our RWA Study Network logo everywhere
+  // Served at /proxy/rwa-logo.jpg so it resolves correctly inside the iframe
   html = html.replace(
     /https:\/\/i\.ibb\.co\/yF4mhNPB\/f493d534-fbf8-4b31-b741-83b343f8a9e1\.jpg/g,
-    "/assets/rwa-logo.jpg"
+    "/proxy/rwa-logo.jpg"
   );
 
   // ── Branding rewrites ──────────────────────────────────────────────────────
