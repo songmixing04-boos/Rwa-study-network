@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "RWA Study Portal"
+version = "1.0.0"
+id = "artifacts/rwa-proxy"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19143
+
+[services.development]
+run = "pnpm --filter @workspace/rwa-proxy run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/rwa-proxy", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/rwa-proxy/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19143"
+BASE_PATH = "/"
