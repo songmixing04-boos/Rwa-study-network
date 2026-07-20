@@ -1,14 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "cd api && npm install",
   "functions": {
-    "api/index.ts": {
+    "api/server.js": {
       "memory": 1024,
       "maxDuration": 30
     }
   },
   "rewrites": [
     { "source": "/rwa-logo.jpg", "destination": "/public/rwa-logo.jpg" },
-    { "source": "/(.*)", "destination": "/api/index" }
+    { "source": "/(.*)", "destination": "/api/server" }
   ]
 }
