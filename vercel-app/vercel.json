@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "functions": {
+    "api/server.js": {
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    { "source": "/rwa-logo.jpg", "destination": "/public/rwa-logo.jpg" },
+    { "source": "/(.*)", "destination": "/api/server" }
+  ]
+}
