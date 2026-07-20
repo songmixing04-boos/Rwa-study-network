@@ -1,9 +1,6 @@
 // Vercel serverless entry point — standalone, no workspace deps
 import express from "express";
 import cors from "cors";
-import { createReadStream } from "fs";
-import { fileURLToPath } from "url";
-import path from "path";
 
 const app = express();
 app.use(cors());
@@ -14,9 +11,6 @@ app.use(express.urlencoded({ extended: true }));
 const TARGET_BASE = "https://rwa.studybeepro.in";
 const WORKER_BASE = "https://api.shanvikashyap9548.workers.dev";
 const SITE_ORIGIN = "https://rwa.studybeepro.in";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const LOGO_PATH = path.join(__dirname, "../artifacts/api-server/public/rwa-logo.jpg");
 
 // ─── Fetch override injected into every proxied page ─────────────────────────
 const FETCH_OVERRIDE = `
@@ -181,11 +175,9 @@ function rewriteJs(js: string): string {
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
-// Logo
+// Logo — served as static from /public/rwa-logo.jpg via vercel.json rewrite
 app.get("/proxy/rwa-logo.jpg", (_req, res) => {
-  res.setHeader("Content-Type", "image/jpeg");
-  res.setHeader("Cache-Control", "public, max-age=86400");
-  createReadStream(LOGO_PATH).pipe(res);
+  res.redirect(301, "/rwa-logo.jpg");
 });
 
 // Health

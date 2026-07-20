@@ -1,7 +1,6 @@
 {
   "version": 2,
-  "installCommand": "npm install -g pnpm@latest && pnpm install",
-  "buildCommand": "echo 'Build done'",
+  "buildCommand": "cd api && npm install",
   "functions": {
     "api/index.ts": {
       "memory": 1024,
@@ -9,6 +8,7 @@
     }
   },
   "rewrites": [
+    { "source": "/rwa-logo.jpg", "destination": "/public/rwa-logo.jpg" },
     { "source": "/(.*)", "destination": "/api/index" }
   ]
 }
