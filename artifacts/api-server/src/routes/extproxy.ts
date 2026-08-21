@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from "express";
 import { logger } from "../lib/logger";
 
 const router = Router();
-const SITE_ORIGIN = "https://rwa.studybeepro.in";
+const SITE_ORIGIN = "https://rwa.studybeepro.site";
 
 // Rewrites JSON config responses so player_url and domain point through our proxy
 function rewriteConfigJson(data: Record<string, unknown>): Record<string, unknown> {
@@ -21,7 +21,7 @@ function rewriteConfigJson(data: Record<string, unknown>): Record<string, unknow
     let url = result.player_url;
 
     // Strip the target origin if present
-    url = url.replace(/https?:\/\/rwa\.studybeepro\.in/gi, "");
+    url = url.replace(/https?:\/\/rwa\.studybeepro\.site\/rwax/gi, "");
 
     // Resolve relative segments: "../foo.html" → "/foo.html", "./foo" → "/foo"
     url = url.replace(/^\.\.\/+/, "/");
@@ -64,7 +64,7 @@ router.all("/", async (req: Request, res: Response) => {
     Accept: (req.headers["accept"] as string) || "application/json, */*",
     "Accept-Language": "hi-IN,hi;q=0.9,en;q=0.8",
     Origin: SITE_ORIGIN,
-    Referer: SITE_ORIGIN + "/",
+    Referer: SITE_ORIGIN + "/rwax/",
   };
 
   // Forward auth / custom headers that the page JS sends

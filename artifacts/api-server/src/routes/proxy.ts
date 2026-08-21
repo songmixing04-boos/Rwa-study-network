@@ -5,7 +5,8 @@ import path from "path";
 import { logger } from "../lib/logger";
 
 const router = Router();
-const TARGET_BASE = "https://rwa.studybeepro.in";
+const TARGET_BASE = "https://rwa.studybeepro.site/rwax";
+const TARGET_HOST_PATTERN = "rwa\\.studybeepro\\.site";
 
 // Serve logo directly under /proxy so it resolves correctly inside the iframe
 const LOGO_PATH = path.join(
@@ -24,7 +25,7 @@ router.get("/rwa-logo.jpg", (_req, res) => {
 const FETCH_OVERRIDE = `
 <script data-proxy-inject="1">
 (function(){
-  var _BLOCKED=['rwa.smexfot.workers.dev','kgsfreebatch.free.nf','shanvikashyap9548.workers.dev'];
+  var _BLOCKED=['rwa.smexfot.workers.dev','kgsfreebatch.free.nf','shanvikashyap9548.workers.dev','rwa.iownprince5.workers.dev'];
   function _isBlocked(u){if(!u)return false;for(var i=0;i<_BLOCKED.length;i++){if(u.indexOf(_BLOCKED[i])!==-1)return true;}return false;}
   function _proxyUrl(u){return'/api/extproxy?url='+encodeURIComponent(u);}
   var _origFetch=window.fetch;
@@ -56,7 +57,7 @@ function rewriteHtml(html: string): string {
   // Absolute target URLs in attributes
   html = html.replace(
     new RegExp(
-      `(href|src|action|data-src|data-href|data-url|poster|srcset)=(['"])(https?:)?//rwa\\.studybeepro\\.in`,
+      `(href|src|action|data-src|data-href|data-url|poster|srcset)=(['"])(https?:)?//${TARGET_HOST_PATTERN}`,
       "gi"
     ),
     "$1=$2/proxy"
@@ -71,11 +72,11 @@ function rewriteHtml(html: string): string {
 
   // JS string literals containing the target domain
   html = html.replace(
-    new RegExp(`(['"\`])https?://rwa\\.studybeepro\\.in(/[^'"\`]*)`, "g"),
+    new RegExp(`(['"\`])https?://${TARGET_HOST_PATTERN}(/[^'"\`]*)`, "g"),
     "$1/proxy$2"
   );
   html = html.replace(
-    new RegExp(`(['"\`])https?://rwa\\.studybeepro\\.in(['"\`])`, "g"),
+    new RegExp(`(['"\`])https?://${TARGET_HOST_PATTERN}(['"\`])`, "g"),
     "$1/proxy/$2"
   );
 
@@ -94,7 +95,7 @@ function rewriteHtml(html: string): string {
 
   // CSS url() inside <style> tags
   html = html.replace(
-    new RegExp(`url\\((['"]?)https?://rwa\\.studybeepro\\.in`, "g"),
+    new RegExp(`url\\((['"]?)https?://${TARGET_HOST_PATTERN}`, "g"),
     "url($1/proxy"
   );
   html = html.replace(
@@ -257,7 +258,7 @@ function rewriteHtml(html: string): string {
 // Rewrite URLs in CSS files
 function rewriteCss(css: string): string {
   css = css.replace(
-    new RegExp(`url\\((['"]?)https?://rwa\\.studybeepro\\.in`, "g"),
+    new RegExp(`url\\((['"]?)https?://${TARGET_HOST_PATTERN}`, "g"),
     "url($1/proxy"
   );
   css = css.replace(
@@ -270,7 +271,7 @@ function rewriteCss(css: string): string {
 // Rewrite URLs in JS files
 function rewriteJs(js: string): string {
   js = js.replace(
-    new RegExp(`(['"\`])https?://rwa\\.studybeepro\\.in`, "g"),
+    new RegExp(`(['"\`])https?://${TARGET_HOST_PATTERN}`, "g"),
     "$1/proxy"
   );
   return js;

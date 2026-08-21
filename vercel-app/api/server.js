@@ -6,13 +6,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const TARGET_BASE = "https://rwa.studybeepro.in";
+const TARGET_BASE = "https://rwa.studybeepro.site/rwax";
 const WORKER_BASE = "https://api.shanvikashyap9548.workers.dev";
-const SITE_ORIGIN = "https://rwa.studybeepro.in";
+const SITE_ORIGIN = "https://rwa.studybeepro.site";
 
 const FETCH_OVERRIDE = `<script data-proxy-inject="1">
 (function(){
-  var _B=['rwa.smexfot.workers.dev','kgsfreebatch.free.nf','shanvikashyap9548.workers.dev'];
+  var _B=['rwa.smexfot.workers.dev','kgsfreebatch.free.nf','shanvikashyap9548.workers.dev','rwa.iownprince5.workers.dev'];
   function _isB(u){if(!u)return false;for(var i=0;i<_B.length;i++){if(u.indexOf(_B[i])!==-1)return true;}return false;}
   function _pUrl(u){return'/api/extproxy?url='+encodeURIComponent(u);}
   var _oF=window.fetch;
@@ -82,13 +82,13 @@ function rewriteHtml(html) {
   html = html.replace(/<meta[^>]*x-frame-options[^>]*>/gi, "");
   html = html.replace(/<meta[^>]*content-security-policy[^>]*>/gi, "");
   html = html.replace(/(<head[^>]*>)/i, "$1" + FETCH_OVERRIDE);
-  html = html.replace(new RegExp(`(href|src|action|data-src|data-href|data-url|poster|srcset)=(['"])(https?:)?//rwa\\.studybeepro\\.in`, "gi"), "$1=$2/proxy");
+  html = html.replace(new RegExp(`(href|src|action|data-src|data-href|data-url|poster|srcset)=(['"])(https?:)?//rwa\\.studybeepro\\.site`, "gi"), "$1=$2/proxy");
   html = html.replace(/(href|src|action|data-src|poster|srcset)=(['"])(\/(?!proxy\/|\/)[^'"> ]*)/gi, "$1=$2/proxy$3");
-  html = html.replace(new RegExp(`(['"\`])https?://rwa\\.studybeepro\\.in(/[^'"\`]*)`, "g"), "$1/proxy$2");
-  html = html.replace(new RegExp(`(['"\`])https?://rwa\\.studybeepro\\.in(['"\`])`, "g"), "$1/proxy/$2");
+  html = html.replace(new RegExp(`(['"\`])https?://rwa\\.studybeepro\\.site(/[^'"\`]*)`, "g"), "$1/proxy$2");
+  html = html.replace(new RegExp(`(['"\`])https?://rwa\\.studybeepro\\.site(['"\`])`, "g"), "$1/proxy/$2");
   html = html.replace(/(['"`])(https?:)?\/\/api\.shanvikashyap9548\.workers\.dev/gi, "$1/api/video-worker");
   html = html.replace(/(window\.location(?:\.href)?\s*=\s*['"])(\/(?!proxy\/)[^'"]+)/gi, "$1/proxy$2");
-  html = html.replace(new RegExp(`url\\((['"]?)https?://rwa\\.studybeepro\\.in`, "g"), "url($1/proxy");
+  html = html.replace(new RegExp(`url\\((['"]?)https?://rwa\\.studybeepro\\.site`, "g"), "url($1/proxy");
   html = html.replace(/url\((['"]?)(\/(?!proxy\/)[^'"\)]*)\)/g, (_, q, p) => `url(${q}/proxy${p})`);
   html = html.replace(/https:\/\/i\.ibb\.co\/yF4mhNPB\/f493d534-fbf8-4b31-b741-83b343f8a9e1\.jpg/g, "/rwa-logo.jpg");
   html = html.replace(/<title>[^<]*<\/title>/i, "<title>RWA Study Network</title>");
@@ -104,13 +104,13 @@ function rewriteHtml(html) {
 }
 
 function rewriteCss(css) {
-  css = css.replace(new RegExp(`url\\((['"]?)https?://rwa\\.studybeepro\\.in`, "g"), "url($1/proxy");
+  css = css.replace(new RegExp(`url\\((['"]?)https?://rwa\\.studybeepro\\.site`, "g"), "url($1/proxy");
   css = css.replace(/url\((['"]?)(\/(?!proxy\/)[^'"\)]*)\)/g, (_, q, p) => `url(${q}/proxy${p})`);
   return css;
 }
 
 function rewriteJs(js) {
-  return js.replace(new RegExp(`(['"\`])https?://rwa\\.studybeepro\\.in`, "g"), "$1/proxy");
+  return js.replace(new RegExp(`(['"\`])https?://${"rwa\\.studybeepro\\.site"}`, "g"), "$1/proxy");
 }
 
 // Health
@@ -122,7 +122,7 @@ function rewriteConfigJson(data) {
   if (result["stylishName(brand)"] === "RWA" || result["stylishName(brand)"] === "rwa") result["stylishName(brand)"] = "RWA Study Network";
   if (typeof result.name === "string") result.name = result.name.replace(/\bRWA\b/g, "RWA Study Network");
   if (typeof result.player_url === "string") {
-    let url = result.player_url.replace(/https?:\/\/rwa\.studybeepro\.in/gi, "").replace(/^\.\.\/+/, "/").replace(/^\.\/+/, "/");
+    let url = result.player_url.replace(/https?:\/\/rwa\.studybeepro\.site\/rwax/gi, "").replace(/^\.\.\/+/, "/").replace(/^\.\/+/, "/");
     if (!url.startsWith("/")) url = "/" + url;
     if (!url.startsWith("/proxy/") && !url.startsWith("/proxy?")) url = "/proxy" + url;
     result.player_url = url;
@@ -135,7 +135,7 @@ app.options("/api/extproxy", (_req, res) => { res.setHeader("Access-Control-Allo
 app.all("/api/extproxy", async (req, res) => {
   const targetUrl = req.query["url"];
   if (!targetUrl || !targetUrl.startsWith("http")) { res.status(400).json({ error: "Missing or invalid url" }); return; }
-  const fh = { "User-Agent": "Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36", Accept: req.headers["accept"] || "application/json,*/*", "Accept-Language": "hi-IN,hi;q=0.9,en;q=0.8", Origin: SITE_ORIGIN, Referer: SITE_ORIGIN + "/" };
+  const fh = { "User-Agent": "Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36", Accept: req.headers["accept"] || "application/json,*/*", "Accept-Language": "hi-IN,hi;q=0.9,en;q=0.8", Origin: SITE_ORIGIN, Referer: SITE_ORIGIN + "/rwax/" };
   for (const h of ["auth-key","authorization","user-id","source","client-service","x-kgs-token","x-kgs-short","timestamp","content-type"]) { if (req.headers[h]) fh[h] = req.headers[h]; }
   let body;
   if (req.method !== "GET" && req.method !== "HEAD") {
@@ -156,7 +156,7 @@ app.all("/api/extproxy", async (req, res) => {
 app.options("/api/video-worker/*", (_req, res) => { res.setHeader("Access-Control-Allow-Origin", "*"); res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS"); res.setHeader("Access-Control-Allow-Headers", "Content-Type"); res.status(204).end(); });
 app.all("/api/video-worker/*", async (req, res) => {
   const targetUrl = WORKER_BASE + req.url.replace("/api/video-worker", "");
-  const fh = { "User-Agent": "Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36", Accept: req.headers["accept"] || "*/*", "Accept-Language": "hi-IN,hi;q=0.9,en;q=0.8", Referer: SITE_ORIGIN + "/player", Origin: SITE_ORIGIN };
+  const fh = { "User-Agent": "Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36", Accept: req.headers["accept"] || "*/*", "Accept-Language": "hi-IN,hi;q=0.9,en;q=0.8", Referer: SITE_ORIGIN + "/rwax/player", Origin: SITE_ORIGIN };
   if (req.headers["cookie"]) fh["Cookie"] = req.headers["cookie"];
   try {
     const response = await fetch(targetUrl, { method: req.method, headers: fh, signal: AbortSignal.timeout(20000) });
