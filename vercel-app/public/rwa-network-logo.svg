@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <defs><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe58a"/><stop offset=".5" stop-color="#facc15"/><stop offset="1" stop-color="#a16207"/></linearGradient></defs>
+  <rect width="160" height="160" rx="38" fill="#11100b"/>
+  <path d="M35 58l12-25 18 16 15-25 15 25 18-16 12 25-15-5-9 12H59l-9-12-15 5z" fill="url(#gold)" stroke="#fff2a8" stroke-width="3"/>
+  <path d="M30 68c18-8 42-8 50 0 8-8 32-8 50 0v55c-18-8-38-8-50 1-12-9-32-9-50-1V68z" fill="#f8d66d" stroke="#fff2a8" stroke-width="4"/>
+  <path d="M80 68v55M42 82c13-4 25-2 38 4M118 82c-13-4-25-2-38 4" fill="none" stroke="#7c4a03" stroke-width="4" stroke-linecap="round"/>
+  <text x="80" y="148" text-anchor="middle" fill="#facc15" font-family="Arial,sans-serif" font-size="10" font-weight="700">RWA</text>
+</svg>
