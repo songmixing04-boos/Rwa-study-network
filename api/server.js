@@ -6,9 +6,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const TARGET_BASE = "https://rwa.studybeepro.site/rwax";
+const TARGET_BASE = "https://rwa.streamfiles.eu.org";
 const WORKER_BASE = "https://api.shanvikashyap9548.workers.dev";
-const SITE_ORIGIN = "https://rwa.studybeepro.site";
+const SITE_ORIGIN = "https://rwa.streamfiles.eu.org";
 
 const FETCH_OVERRIDE = `<script data-proxy-inject="1">
 (function(){
@@ -84,11 +84,12 @@ function rewriteHtml(html) {
   html = html.replace(/(<head[^>]*>)/i, "$1" + FETCH_OVERRIDE);
   html = html.replace(new RegExp(`(href|src|action|data-src|data-href|data-url|poster|srcset)=(['"])(https?:)?//rwa\\.studybeepro\\.site`, "gi"), "$1=$2/proxy");
   html = html.replace(/(href|src|action|data-src|poster|srcset)=(['"])(\/(?!proxy\/|\/)[^'"> ]*)/gi, "$1=$2/proxy$3");
-  html = html.replace(new RegExp(`(['"\`])https?://rwa\\.studybeepro\\.site(/[^'"\`]*)`, "g"), "$1/proxy$2");
-  html = html.replace(new RegExp(`(['"\`])https?://rwa\\.studybeepro\\.site(['"\`])`, "g"), "$1/proxy/$2");
+  html = html.replace(/(href|src|action|data-src|data-href|data-url|poster|srcset)=(['"])(?!https?:|\/\/|\/|#|data:|mailto:|tel:)([^'"> ]+)/gi, "$1=$2/proxy/$3");
+  html = html.replace(new RegExp(`(['"\`])https?://rwa\\.streamfiles\\.eu\\.org(/[^'"\`]*)`, "g"), "$1/proxy$2");
+  html = html.replace(new RegExp(`(['"\`])https?://rwa\\.streamfiles\\.eu\\.org(['"\`])`, "g"), "$1/proxy/$2");
   html = html.replace(/(['"`])(https?:)?\/\/api\.shanvikashyap9548\.workers\.dev/gi, "$1/api/video-worker");
   html = html.replace(/(window\.location(?:\.href)?\s*=\s*['"])(\/(?!proxy\/)[^'"]+)/gi, "$1/proxy$2");
-  html = html.replace(new RegExp(`url\\((['"]?)https?://rwa\\.studybeepro\\.site`, "g"), "url($1/proxy");
+  html = html.replace(new RegExp(`url\\((['"]?)https?://rwa\\.streamfiles\\.eu\\.org`, "g"), "url($1/proxy");
   html = html.replace(/url\((['"]?)(\/(?!proxy\/)[^'"\)]*)\)/g, (_, q, p) => `url(${q}/proxy${p})`);
   html = html.replace(/https:\/\/i\.ibb\.co\/yF4mhNPB\/f493d534-fbf8-4b31-b741-83b343f8a9e1\.jpg/g, "/rwa-logo.jpg");
   html = html.replace(/<title>[^<]*<\/title>/i, "<title>RWA Study Network</title>");
@@ -110,7 +111,8 @@ function rewriteCss(css) {
 }
 
 function rewriteJs(js) {
-  return js.replace(new RegExp(`(['"\`])https?://rwa\\.studybeepro\\.site`, "g"), "$1/proxy");
+  js = js.replace(new RegExp(`(['"\`])https?://rwa\\.streamfiles\\.eu\\.org`, "g"), "$1/proxy");
+  return js.replace(/(['"`])api\/(?!proxy\/)/g, "$1/proxy/api/");
 }
 
 // Health
@@ -122,7 +124,7 @@ function rewriteConfigJson(data) {
   if (result["stylishName(brand)"] === "RWA" || result["stylishName(brand)"] === "rwa") result["stylishName(brand)"] = "RWA Study Network";
   if (typeof result.name === "string") result.name = result.name.replace(/\bRWA\b/g, "RWA Study Network");
   if (typeof result.player_url === "string") {
-    let url = result.player_url.replace(/https?:\/\/rwa\.studybeepro\.site\/rwax/gi, "").replace(/^\.\.\/+/, "/").replace(/^\.\/+/, "/");
+    let url = result.player_url.replace(/https?:\/\/rwa\.streamfiles\.eu\.org/gi, "").replace(/^\.\.\/+/, "/").replace(/^\.\/+/, "/");
     if (!url.startsWith("/")) url = "/" + url;
     if (!url.startsWith("/proxy/") && !url.startsWith("/proxy?")) url = "/proxy" + url;
     result.player_url = url;
@@ -169,6 +171,7 @@ app.all("/api/video-worker/*", async (req, res) => {
 app.all("/proxy/*", async (req, res) => {
   const targetUrl = TARGET_BASE + req.url.replace(/^\/proxy/, "");
   const fh = { "User-Agent": "Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36", Accept: req.headers["accept"] || "*/*", "Accept-Language": req.headers["accept-language"] || "hi-IN,hi;q=0.9,en;q=0.8", "Accept-Encoding": "identity", Referer: TARGET_BASE + "/", Origin: TARGET_BASE };
+  for (const h of ["dev-jisu-key","dev-jisu-signature","authorization","user-id"]) { if (req.headers[h]) fh[h] = req.headers[h]; }
   if (req.headers["cookie"]) fh["Cookie"] = req.headers["cookie"];
   let bodyPayload;
   const method = req.method.toUpperCase();

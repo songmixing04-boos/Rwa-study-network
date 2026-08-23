@@ -4,7 +4,7 @@ import { logger } from "../lib/logger";
 const router = Router();
 // The Cloudflare Worker that resolves video stream URLs
 const WORKER_BASE = "https://api.shanvikashyap9548.workers.dev";
-const SITE_ORIGIN = "https://rwa.studybeepro.site";
+const SITE_ORIGIN = "https://rwa.streamfiles.eu.org";
 
 router.all("/{*path}", async (req: Request, res: Response) => {
   const targetUrl = WORKER_BASE + req.url;
@@ -14,7 +14,7 @@ router.all("/{*path}", async (req: Request, res: Response) => {
       "Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
     Accept: (req.headers["accept"] as string) || "*/*",
     "Accept-Language": "hi-IN,hi;q=0.9,en;q=0.8",
-    Referer: SITE_ORIGIN + "/rwax/player",
+    Referer: SITE_ORIGIN + "/",
     Origin: SITE_ORIGIN,
   };
 

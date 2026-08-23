@@ -5,8 +5,8 @@ import path from "path";
 import { logger } from "../lib/logger";
 
 const router = Router();
-const TARGET_BASE = "https://rwa.studybeepro.site/rwax";
-const TARGET_HOST_PATTERN = "rwa\\.studybeepro\\.site";
+const TARGET_BASE = "https://rwa.streamfiles.eu.org";
+const TARGET_HOST_PATTERN = "rwa\\.streamfiles\\.eu\\.org";
 
 // Serve logo directly under /proxy so it resolves correctly inside the iframe
 const LOGO_PATH = path.join(
@@ -68,6 +68,10 @@ function rewriteHtml(html: string): string {
   html = html.replace(
     /(href|src|action|data-src|poster|srcset)=(['"])(\/(?!proxy\/|\/)[^'"> ]*)/gi,
     "$1=$2/proxy$3"
+  );
+  html = html.replace(
+    /(href|src|action|data-src|data-href|data-url|poster|srcset)=(['"])(?!https?:|\/\/|\/|#|data:|mailto:|tel:)([^'"> ]+)/gi,
+    "$1=$2/proxy/$3"
   );
 
   // JS string literals containing the target domain
@@ -274,7 +278,7 @@ function rewriteJs(js: string): string {
     new RegExp(`(['"\`])https?://${TARGET_HOST_PATTERN}`, "g"),
     "$1/proxy"
   );
-  return js;
+  return js.replace(/(['"`])api\/(?!proxy\/)/g, "$1/proxy/api/");
 }
 
 router.all("/{*path}", async (req: Request, res: Response) => {
@@ -292,6 +296,10 @@ router.all("/{*path}", async (req: Request, res: Response) => {
     Referer: TARGET_BASE + "/",
     Origin: TARGET_BASE,
   };
+  for (const header of ["dev-jisu-key", "dev-jisu-signature", "authorization", "user-id"]) {
+    const value = req.headers[header];
+    if (value) forwardHeaders[header] = value as string;
+  }
 
   if (req.headers["cookie"]) {
     forwardHeaders["Cookie"] = req.headers["cookie"] as string;
