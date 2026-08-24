@@ -30,6 +30,8 @@ const FETCH_OVERRIDE = `<script data-proxy-inject="1">
 })();
 </script>`;
 
+const MEDIA_OVERRIDE = `<script data-proxy-media="1">(function(){var h='rwa-stream-server-b80fb0d6b8e4.herokuapp.com';function p(u){return u&&typeof u==='string'&&u.indexOf(h)!==-1&&u.indexOf('/api/extproxy?url=')!==0?'/api/extproxy?url='+encodeURIComponent(u):u}var a=Element.prototype.setAttribute;Element.prototype.setAttribute=function(n,v){if((n==='src'||n==='href')&&typeof v==='string')v=p(v);return a.call(this,n,v)};function w(){if(!window.Hls||window.Hls.__rwaWrapped||!window.Hls.prototype.loadSource)return;var o=window.Hls.prototype.loadSource;window.Hls.prototype.loadSource=function(u){return o.call(this,p(u))};window.Hls.__rwaWrapped=true}var t=setInterval(w,100);setTimeout(function(){clearInterval(t);w()},15000);})();</script>`;
+
 const SOCIAL_POPUP = `<style>
 #rwa-popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99998;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
 #rwa-popup-overlay.rwa-hidden{display:none!important;}
@@ -85,7 +87,7 @@ const SOCIAL_POPUP = `<style>
 function rewriteHtml(html) {
   html = html.replace(/<meta[^>]*x-frame-options[^>]*>/gi, "");
   html = html.replace(/<meta[^>]*content-security-policy[^>]*>/gi, "");
-  html = html.replace(/(<head[^>]*>)/i, "$1" + FETCH_OVERRIDE);
+  html = html.replace(/(<head[^>]*>)/i, "$1" + FETCH_OVERRIDE + MEDIA_OVERRIDE);
   html = html.replace(new RegExp(`(href|src|action|data-src|data-href|data-url|poster|srcset)=(['"])(https?:)?//rwa\\.streamfiles\\.eu\\.org`, "gi"), "$1=$2/proxy");
   html = html.replace(/(href|src|action|data-src|poster|srcset)=(['"])(\/(?!proxy\/|\/)[^'"> ]*)/gi, "$1=$2/proxy$3");
   html = html.replace(/(href|src|action|data-src|data-href|data-url|poster|srcset)=(['"])(?!https?:|\/\/|\/|#|data:|mailto:|tel:)([^'"> ]+)/gi, "$1=$2/proxy/$3");
@@ -98,8 +100,10 @@ function rewriteHtml(html) {
   html = html.replace(/https:\/\/i\.ibb\.co\/yF4mhNPB\/f493d534-fbf8-4b31-b741-83b343f8a9e1\.jpg/g, "/rwa-logo.jpg");
   html = html.replace(/<title>[^<]*<\/title>/i, "<title>RWA Study Network</title>");
   html = html.replace(/StudyBee\s*Pro/gi, "RWA Study Network");
+  html = html.replace(/StudyRays/gi, "Rwa by Ankit");
   html = html.replace(/<div([^>]*)class="brand"[^>]*>STUDY<span[^>]*>BEE<\/span><\/div>/gi, '<div$1class="brand">RWA <span>Study Network</span></div>');
   html = html.replace(/StudyBee/gi, "RWA Study Network");
+  html = html.replace(/StudyRays/gi, "Rwa by Ankit");
   html = html.replace(/studybeepro/gi, "rwa study network");
 
   const TICKER = `<div id="rwa-ticker-wrap" style="width:100%;overflow:hidden;background:linear-gradient(90deg,#0a0a0a,#1a1200,#0a0a0a);border-top:1px solid #FACC1540;border-bottom:1px solid #FACC1540;padding:5px 0;z-index:999;"><style>@keyframes rwa-scroll{0%{transform:translateX(100vw)}100%{transform:translateX(-100%)}}#rwa-ticker-inner{display:inline-block;white-space:nowrap;animation:rwa-scroll 28s linear infinite;font-size:13px;font-weight:700;}#rwa-ticker-inner span.t1{color:#FACC15;}#rwa-ticker-inner span.t2{color:#e2c97e;font-size:12px;}#rwa-ticker-inner span.sep{color:#FACC1566;margin:0 18px;}</style><div id="rwa-ticker-inner"><span class="t1">🌟 RWA Study Network</span><span class="sep">✦</span><span class="t2">Development by 🌺⃞⃪꯭𝓐𝓷𝓴𝓲𝓽 𝓒𝓱𝓪𝓾𝓭𝓱𝓪𝓻𝔂🦅</span><span class="sep">✦</span><span class="t1">🌟 RWA Study Network</span><span class="sep">✦</span><span class="t2">Development by 🌺⃞⃪꯭𝓐𝓷𝓴𝓲𝓽 𝓒𝓱𝓪𝓾𝓭𝓱𝓪𝓻𝔂🦅</span><span class="sep">✦</span></div></div>`;
@@ -136,6 +140,16 @@ function rewriteConfigJson(data) {
   }
   return result;
 }
+function proxyManifest(text, baseUrl) {
+  const map = (value) => {
+    if (!value || value.trim().startsWith("#") || value.includes("/api/extproxy?url=")) return value;
+    try {
+      const absolute = new URL(value.trim(), baseUrl).toString();
+      return absolute.includes("rwa-stream-server-b80fb0d6b8e4.herokuapp.com") ? "/api/extproxy?url=" + encodeURIComponent(absolute) : value;
+    } catch { return value; }
+  };
+  return text.replace(/(^|\r?\n)(?!#)([^\r\n]+)/g, (_, p, v) => p + map(v)).replace(/URI="([^"]+)"/g, (_, v) => 'URI="' + map(v) + '"');
+}
 
 app.options("/api/extproxy", (_req, res) => { res.setHeader("Access-Control-Allow-Origin", "*"); res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS"); res.setHeader("Access-Control-Allow-Headers", "*"); res.status(204).end(); });
 
@@ -155,6 +169,7 @@ app.all("/api/extproxy", async (req, res) => {
     const ct = response.headers.get("content-type") || "";
     res.setHeader("Access-Control-Allow-Origin", "*"); res.setHeader("Access-Control-Allow-Credentials", "true"); res.setHeader("Access-Control-Allow-Headers", "*"); res.status(response.status);
     if (ct.includes("application/json")) { const json = await response.json(); res.setHeader("Content-Type", "application/json"); res.json(rewriteConfigJson(json)); }
+    else if (ct.includes("mpegurl") || ct.includes("x-mpegurl") || String(targetUrl).includes(".m3u8")) { res.setHeader("Content-Type", ct || "application/vnd.apple.mpegurl"); res.send(proxyManifest(await response.text(), targetUrl)); }
     else { res.setHeader("Content-Type", ct); res.send(Buffer.from(await response.arrayBuffer())); }
   } catch { if (!res.headersSent) res.status(502).json({ error: "Upstream failed" }); }
 });

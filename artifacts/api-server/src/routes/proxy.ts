@@ -48,6 +48,44 @@ const FETCH_OVERRIDE = `
 })();
 </script>`;
 
+// Media URLs in the source player point at a separate storage host. Keep the
+// signed URL intact, but route it through our own proxy so the iframe does not
+// lose access because of cross-origin media/CORS restrictions.
+const MEDIA_OVERRIDE = `
+<script data-proxy-media="1">
+(function(){
+  var _mediaHost='rwa-stream-server-b80fb0d6b8e4.herokuapp.com';
+  function proxyMedia(u){
+    if(!u || typeof u!=='string' || u.indexOf('/api/extproxy?url=')===0) return u;
+    if(u.indexOf(_mediaHost)===-1) return u;
+    return '/api/extproxy?url='+encodeURIComponent(u);
+  }
+  var _set=HTMLMediaElement.prototype.__defineSetter__ && Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype,'src');
+  if(_set && _set.set) Object.defineProperty(HTMLMediaElement.prototype,'src',{get:_set.get,set:function(u){return _set.set.call(this,proxyMedia(u));}});
+  var _attr=Element.prototype.setAttribute;
+  Element.prototype.setAttribute=function(name,value){
+    if((name==='src'||name==='href') && typeof value==='string') value=proxyMedia(value);
+    return _attr.call(this,name,value);
+  };
+  function wrapHls(){
+    if(!window.Hls || window.Hls.__rwaWrapped || !window.Hls.prototype.loadSource) return;
+    var old=window.Hls.prototype.loadSource;
+    window.Hls.prototype.loadSource=function(u){return old.call(this,proxyMedia(u));};
+    window.Hls.__rwaWrapped=true;
+  }
+  var timer=setInterval(wrapHls,100);
+  setTimeout(function(){clearInterval(timer);wrapHls();},15000);
+  function rewriteLinks(){
+    document.querySelectorAll('a[href],source[src],video[src]').forEach(function(el){
+      var attr=el.hasAttribute('href')?'href':'src', value=el.getAttribute(attr);
+      var next=proxyMedia(value);
+      if(next!==value) el.setAttribute(attr,next);
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',rewriteLinks); else rewriteLinks();
+})();
+</script>`;
+
 // Rewrite all URLs in HTML pointing to the target to go through /proxy
 function rewriteHtml(html: string): string {
   // Remove headers that block embedding
@@ -55,7 +93,7 @@ function rewriteHtml(html: string): string {
   html = html.replace(/<meta[^>]*content-security-policy[^>]*>/gi, "");
 
   // Inject the fetch override as early as possible (right after <head>)
-  html = html.replace(/(<head[^>]*>)/i, "$1" + FETCH_OVERRIDE);
+  html = html.replace(/(<head[^>]*>)/i, "$1" + FETCH_OVERRIDE + MEDIA_OVERRIDE);
 
   // Absolute target URLs in attributes
   html = html.replace(
@@ -125,6 +163,7 @@ function rewriteHtml(html: string): string {
   // "studybeepro" as visible text (not inside URLs/hrefs — those were already
   // rewritten above, so by this point any remaining occurrences are display text)
   html = html.replace(/StudyBee\s*Pro/gi, "RWA Study Network");
+  html = html.replace(/StudyRays/gi, "Rwa by Ankit");
 
   // Player page header: STUDY<span>BEE</span> → RWA Study Network
   html = html.replace(
@@ -133,6 +172,7 @@ function rewriteHtml(html: string): string {
   );
 
   html = html.replace(/StudyBee/gi, "RWA Study Network");
+  html = html.replace(/StudyRays/gi, "Rwa by Ankit");
   html = html.replace(/studybeepro/gi, "rwa study network");
 
   // Comment strings referencing StudyBee (CSS/JS comments)

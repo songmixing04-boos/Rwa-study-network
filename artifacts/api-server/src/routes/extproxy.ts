@@ -4,6 +4,23 @@ import { logger } from "../lib/logger";
 const router = Router();
 const SITE_ORIGIN = "https://rwa.streamfiles.eu.org";
 
+function proxyMediaUrls(text: string, baseUrl: string): string {
+  const toProxy = (raw: string) => {
+    if (!raw || raw.startsWith("#") || raw.startsWith("/api/extproxy?url=")) return raw;
+    let absolute: string;
+    try {
+      absolute = new URL(raw, baseUrl).toString();
+    } catch {
+      return raw;
+    }
+    if (!absolute.includes("rwa-stream-server-b80fb0d6b8e4.herokuapp.com")) return raw;
+    return `/api/extproxy?url=${encodeURIComponent(absolute)}`;
+  };
+  return text
+    .replace(/(^|\r?\n)(?!#)([^\r\n]+)/g, (_, prefix, value) => `${prefix}${toProxy(value.trim())}`)
+    .replace(/URI="([^"]+)"/g, (_, value) => `URI="${toProxy(value)}"`);
+}
+
 // Rewrites JSON config responses so player_url and domain point through our proxy
 function rewriteConfigJson(data: Record<string, unknown>): Record<string, unknown> {
   const result = { ...data };
@@ -111,6 +128,14 @@ router.all("/", async (req: Request, res: Response) => {
       const rewritten = rewriteConfigJson(json);
       res.setHeader("Content-Type", "application/json");
       res.json(rewritten);
+    } else if (
+      contentType.includes("mpegurl") ||
+      contentType.includes("x-mpegurl") ||
+      targetUrl.includes(".m3u8")
+    ) {
+      const manifest = await response.text();
+      res.setHeader("Content-Type", contentType || "application/vnd.apple.mpegurl");
+      res.send(proxyMediaUrls(manifest, targetUrl));
     } else {
       res.setHeader("Content-Type", contentType);
       const buf = Buffer.from(await response.arrayBuffer());
